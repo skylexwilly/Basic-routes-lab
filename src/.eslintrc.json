@@ -1,0 +1,9 @@
+{
+  "env": {
+    "vitest/globals": true
+  },
+  "plugins": ["vitest"],
+  "extends": [
+    "eslint:recommended"
+  ]
+}

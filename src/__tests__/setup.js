@@ -1,9 +1,13 @@
-import { afterEach } from 'vitest'
-import { cleanup } from '@testing-library/react'
-import '@testing-library/jest-dom/vitest'
-import 'whatwg-fetch';
-import {Blob} from 'node:buffer';
+ 
+ /* eslint-env vitest */
+
+ import '@testing-library/jest-dom';
+import { beforeEach, afterEach } from 'vitest';
+
+beforeEach(() => {
+  global.fetch = vi.fn();
+});
 
 afterEach(() => {
-    cleanup();
-})
+  vi.restoreAllMocks();
+});

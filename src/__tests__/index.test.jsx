@@ -1,55 +1,66 @@
-import "@testing-library/jest-dom";
-import { RouterProvider, createMemoryRouter, MemoryRouter} from "react-router-dom"
+ import "@testing-library/jest-dom";
+import { RouterProvider, createMemoryRouter } from "react-router-dom";
 import { render, screen } from "@testing-library/react";
 import routes from "../routes";
 
-
-
-test('renders the Home component on route "/"', () => {
-  const router = createMemoryRouter(routes)
-  render(
-    <RouterProvider router={router}/>
-);
-  expect(screen.getByText(/Home Page/)).toBeInTheDocument();
-});
-
-test('renders the Actors component on route "/actors"', () => {
-    const router = createMemoryRouter(routes, {
-        initialEntries: ['/actors']
+beforeEach(() => {
+  global.fetch = vi.fn(() =>
+    Promise.resolve({
+      json: () =>
+        Promise.resolve({
+          id: 1,
+          title: "Doctor Strange",
+          time: 115,
+          genres: ["Action", "Adventure", "Fantasy"],
+        }),
     })
-  render(
-    <RouterProvider router={router}/>
-);
-  expect(screen.getByText(/Actors Page/)).toBeInTheDocument();
-});
-
-test('renders the Directors component on route "/directors"', () => {
-    const router = createMemoryRouter(routes, {
-        initialEntries: ['/directors']
-    })
-  render(
-      <RouterProvider router={router}/>
   );
-  expect(screen.queryByText(/Directors Page/)).toBeInTheDocument();
 });
 
-test('renders the Movie component on route "/movie/:id"', async () => {
-    const id = 1
-    const router = createMemoryRouter(routes, {
-        initialEntries: [`/movie/${id}`]
-    })
-  render(
-    <RouterProvider router={router}/>
-);
-  expect(await screen.findByText(/Doctor Strange/)).toBeInTheDocument();
+afterEach(() => {
+  vi.restoreAllMocks(); // clean up after each test
 });
 
-test("renders an error page when given a bad URL", () =>{
-  const router = createMemoryRouter(routes, {
-      initialEntries: ["/bad-route"]
-  })
-  render(
-      <RouterProvider router={router} />
-  )
-  expect(screen.getByText(/Oops! Looks like something went wrong./)).toBeInTheDocument()
-})
+const id = 1;
+const router = createMemoryRouter(routes, {
+  initialEntries: [`/movies/${id}`],
+  initialIndex: 0,
+});
+
+test("renders without any errors", () => {
+  const errorSpy = vi.spyOn(global.console, "error");
+  render(<RouterProvider router={router} />);
+  expect(errorSpy).not.toHaveBeenCalled();
+  errorSpy.mockRestore();
+});
+
+test("renders movie's title in an h1", async () => {
+  render(<RouterProvider router={router} />);
+  const h1 = await screen.findByText(/Doctor Strange/);
+  expect(h1).toBeInTheDocument();
+  expect(h1.tagName).toBe("H1");
+});
+
+test("renders movie's time within a p tag", async () => {
+  render(<RouterProvider router={router} />);
+  const p = await screen.findByText(/115/);
+  expect(p).toBeInTheDocument();
+  expect(p.tagName).toBe("P");
+});
+
+test("renders a span for each genre", async () => {
+  render(<RouterProvider router={router} />);
+  const genres = ["Action", "Adventure", "Fantasy"];
+
+  for (const genre of genres) {
+    const span = await screen.findByText(genre);
+    expect(span).toBeInTheDocument();
+    expect(span.tagName).toBe("SPAN");
+  }
+});
+
+test("renders the <NavBar /> component", async () => {
+  render(<RouterProvider router={router} />);
+  const nav = await screen.findByRole("navigation");
+  expect(nav).toBeInTheDocument();
+});

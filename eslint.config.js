@@ -1,11 +1,14 @@
-import js from '@eslint/js'
+ import js from '@eslint/js'
 import globals from 'globals'
 import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
+import vitest from 'eslint-plugin-vitest' // <-- ADD THIS
 
 export default [
   { ignores: ['dist'] },
+
+  // 👇 Main app configuration
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -33,6 +36,15 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+    },
+  },
+
+  // 👇 Add this block for test files (Vitest)
+  {
+    files: ['**/*.test.js', '**/*.test.jsx'],
+    plugins: { vitest },
+    languageOptions: {
+      globals: vitest.environments.globals.globals,
     },
   },
 ]
